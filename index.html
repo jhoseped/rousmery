@@ -220,14 +220,6 @@
     }
 
     /* Intro */
-    .intro-title {
-      font-size: 2.1rem;
-      color: var(--rosa);
-      margin-bottom: 4px;
-      font-family: "Pacifico", cursive;
-      text-shadow: 0 3px 10px rgba(255, 47, 115, 0.35);
-    }
-
     .intro-subtitle {
       font-size: 1rem;
       color: #666666;
@@ -282,15 +274,13 @@
       background-repeat: repeat-x;
     }
 
-    .typing-line {
+    .photo-caption {
       margin-top: 12px;
       padding: 8px 10px;
       font-size: 0.96rem;
       color: #555;
       border-left: 3px solid #ff8ab0;
       border-radius: 4px;
-      min-height: 1.2em;
-      white-space: normal;
     }
 
     /* Carrusel polaroid */
@@ -849,7 +839,6 @@
   <main>
     <!-- INTRO -->
     <section class="intro reveal">
-      <div class="intro-title">Rosmery</div>
       <div class="intro-subtitle">
         Espero que te guste, eres muy especial para mí y quiero que lo sepas.
       </div>
@@ -861,7 +850,9 @@
         </div>
       </div>
 
-      <div class="typing-line" id="typingLine"></div>
+      <p class="photo-caption">
+        Escribo esto con el corazón en la mano, esperando que al leerlo sientas cuánto me importas.
+      </p>
     </section>
 
     <!-- CARRUSEL POLAROID (fotos 2-6) -->
@@ -1180,26 +1171,6 @@
       document.body.style.overflowY = "auto";
       lockedOverlay.classList.add("hidden");
       window.scrollTo(0, 0);
-      startTypingEffect();
-      // El observer se encargará del reveal de secciones
-    }
-
-    // ---------- Typing effect (letra por letra) ----------
-    const typingLine = document.getElementById("typingLine");
-    const typingText =
-      "Escribo esto con el corazón en la mano, esperando que al leerlo sientas cuánto me importas.";
-
-    function startTypingEffect() {
-      typingLine.textContent = "";
-      let index = 0;
-      const speed = 40; // ms por carácter
-      const interval = setInterval(() => {
-        typingLine.textContent += typingText.charAt(index);
-        index++;
-        if (index >= typingText.length) {
-          clearInterval(interval);
-        }
-      }, speed);
     }
 
     // ---------- Carrusel polaroid (fotos 2-6) ----------
