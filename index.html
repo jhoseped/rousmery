@@ -850,9 +850,10 @@
     <!-- INTRO -->
     <section class="intro reveal">
       <div class="intro-title">Rosmery</div>
-      <div class="intro-subtitle">
-        Todo esto es mi forma de decirte cuánto te quiero y cuánto quiero que estemos bien.
-      </div>
+      <p id="typingLine">
+           Escribo esto con el corazón en la mano, esperando que al leerlo sientas cuánto me importas
+      </p>
+
 
       <div class="intro-image-wrapper">
         <div class="intro-torn">
@@ -1184,6 +1185,18 @@
       // El observer se encargará del reveal de secciones
     }
 
+
+    //texto
+    
+
+<script>
+  const typingLine = document.getElementById("typingLine");
+  const typingText =
+    "Escribo esto con el corazón en la mano, esperando que al leerlo sientas cuánto me importas.";
+
+  // Mostrar el texto directamente
+  typingLine.textContent = typingText;
+</script>
 
 
     // ---------- Carrusel polaroid (fotos 2-6) ----------
