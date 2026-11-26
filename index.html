@@ -854,7 +854,6 @@
         Espero que te guste, eres muy especial para mí y quiero que lo sepas.
       </div>
 
-
       <div class="intro-image-wrapper">
         <div class="intro-torn">
           <!-- Primera foto: foto1.jpeg -->
@@ -1185,19 +1184,23 @@
       // El observer se encargará del reveal de secciones
     }
 
+    // ---------- Typing effect (letra por letra) ----------
+    const typingLine = document.getElementById("typingLine");
+    const typingText =
+      "Escribo esto con el corazón en la mano, esperando que al leerlo sientas cuánto me importas.";
 
-    //texto
-    
-
-<script>
-  const typingLine = document.getElementById("typingLine");
-  const typingText =
-    "Escribo esto con el corazón en la mano, esperando que al leerlo sientas cuánto me importas.";
-
-  // Mostrar el texto directamente
-  typingLine.textContent = typingText;
-</script>
-
+    function startTypingEffect() {
+      typingLine.textContent = "";
+      let index = 0;
+      const speed = 40; // ms por carácter
+      const interval = setInterval(() => {
+        typingLine.textContent += typingText.charAt(index);
+        index++;
+        if (index >= typingText.length) {
+          clearInterval(interval);
+        }
+      }, speed);
+    }
 
     // ---------- Carrusel polaroid (fotos 2-6) ----------
     const polaroidData = [
