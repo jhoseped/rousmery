@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="img/logo.png" />
+  <title>Rosmery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Fuente decorativa para el título -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+    rel="stylesheet"
+  >
+  <style>
+    :root {
+      --fondo: #ffffff;
+      --rosa: #ff2f73;
+      --vino: #b31245;
+      --rosa-claro: #ff8ab0;
+      --rosa-suave: #ffe6f0;
+      --texto: #333333;
+      --gris: #777777;
+      --borde-rosa: rgba(255, 47, 115, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    body {
+      background: var(--fondo);
+      color: var(--texto);
+      min-height: 100vh;
+      overflow-x: hidden;
+      overflow-y: hidden; /* Bloqueado hasta terminar tac-tac */
+      transition: background 0.4s ease;
+      position: relative;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 16px 12px 60px;
+      display: none; /* Se muestra cuando termine el tac-tac */
+      position: relative;
+      z-index: 2;
+    }
+
+    section {
+      margin: 32px 0;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 18px 16px 20px;
+      border: 1px solid rgba(255, 47, 115, 0.16);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: radial-gradient(
+        circle at top left,
+        rgba(255, 47, 115, 0.3),
+        transparent 60%
+      );
+      -webkit-mask: linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    h1,
+    h2 {
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    h1 {
+      font-size: 2.6rem;
+      color: var(--rosa);
+      font-family: "Pacifico", cursive;
+      text-shadow: 0 4px 12px rgba(255, 47, 115, 0.4);
+      letter-spacing: 0.06em;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+      color: #c51f56;
+    }
+
+    p {
+      line-height: 1.55;
+      font-size: 0.97rem;
+      color: #444444;
+    }
+
+    /* Animación al hacer scroll (sube y aparece) */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+      will-change: opacity, transform;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Corazones flotantes de fondo */
+    .hearts-bg {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-heart {
+      position: absolute;
+      font-size: 1.2rem;
+      color: rgba(255, 47, 115, 0.15);
+      animation: bgFloat 18s linear infinite;
+    }
+
+    @keyframes bgFloat {
+      0% { transform: translateY(110vh) translateX(0); opacity: 0; }
+      10% { opacity: 0.6; }
+      100% { transform: translateY(-20vh) translateX(20px); opacity: 0; }
+    }
+
+    /* Pantalla tac-tac */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 14px;
+      position: relative;
+      padding: 20px 14px 32px;
+      z-index: 3;
+    }
+
+    .hero-sub {
+      color: var(--gris);
+      font-size: 0.95rem;
+      max-width: 420px;
+    }
+
+    .hint {
+      font-size: 0.86rem;
+      color: #999999;
+      margin-top: 4px;
+    }
+
+    .heart-container {
+      margin-top: 10px;
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+    }
+
+    .heart-emoji {
+      font-size: 3rem;
+      transition: transform 0.15s ease, opacity 0.3s ease;
+      display: inline-block;
+    }
+
+    .floating-words {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 4;
+    }
+
+    .floating-word {
+      position: absolute;
+      font-size: 1rem;
+      font-weight: 600;
+      opacity: 0;
+      animation: floatWord 1.2s ease-out forwards;
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+    }
+
+    @keyframes floatWord {
+      0% { transform: translateY(10px) scale(0.9); opacity: 0; }
+      30% { opacity: 1; }
+      100% { transform: translateY(-24px) scale(1.05); opacity: 0; }
+    }
+
+    .locked-overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(to bottom, #ffffff 40%, #ffe3ee);
+      z-index: 1;
+      transition: opacity 0.35s ease;
+    }
+
+    .locked-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Intro */
+    .intro-title {
+      font-size: 2.1rem;
+      color: var(--rosa);
+      margin-bottom: 4px;
+      font-family: "Pacifico", cursive;
+      text-shadow: 0 3px 10px rgba(255, 47, 115, 0.35);
+    }
+
+    .intro-subtitle {
+      font-size: 1rem;
+      color: #666666;
+      margin-bottom: 16px;
+    }
+
+    .intro-image-wrapper {
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(255, 47, 115, 0.25);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+      background: #fff;
+    }
+
+    .intro-torn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .intro-torn img {
+      width: 100%;
+      max-height: 320px;
+      object-fit: cover;
+      display: block;
+      clip-path: polygon(
+        0 0,
+        100% 0,
+        100% 90%,
+        95% 95%,
+        85% 88%,
+        78% 95%,
+        65% 90%,
+        55% 96%,
+        45% 88%,
+        30% 96%,
+        15% 88%,
+        5% 96%,
+        0 88%
+      );
+    }
+
+    .intro-torn::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 18px;
+      background-image: radial-gradient(circle at 10px -5px, #ffffff 12px, transparent 13px);
+      background-size: 20px 20px;
+      background-repeat: repeat-x;
+    }
+
+    .typing-line {
+      margin-top: 12px;
+      padding: 8px 10px;
+      font-size: 0.96rem;
+      color: #555;
+      border-left: 3px solid #ff8ab0;
+      border-radius: 4px;
+      min-height: 1.2em;
+      white-space: normal;
+    }
+
+    /* Carrusel polaroid */
+    .polaroid-carousel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+      touch-action: pan-y;
+    }
+
+    .polaroid-view {
+      position: relative;
+      height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+    }
+
+    .polaroid {
+      width: 220px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      transform-origin: center center;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      position: relative;
+    }
+
+    .polaroid img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .polaroid-caption {
+      padding: 8px 10px 12px;
+    }
+
+    .polaroid-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--vino);
+      margin-bottom: 4px;
+    }
+
+    .polaroid-text {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .polaroid-dots {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .polaroid-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255, 47, 115, 0.3);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .polaroid-dot.active {
+      background: var(--rosa);
+      transform: scale(1.35);
+    }
+
+    /* Carta */
+    .letter-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .letter {
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+    }
+
+    .envelope {
+      position: relative;
+      width: 100%;
+      min-height: 180px;
+      border-radius: 18px;
+      background: #ffffff;
+      border: 1px solid rgba(255, 47, 115, 0.4);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .envelope::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(
+          135deg,
+          rgba(255, 182, 193, 0.22) 0,
+          transparent 40%
+        ),
+        radial-gradient(circle at bottom right, #ffe3ee 0, transparent 55%);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .envelope-title {
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #c51f56;
+      position: relative;
+      z-index: 1;
+    }
+
+    .envelope-sub {
+      font-size: 0.88rem;
+      color: var(--gris);
+      position: relative;
+      z-index: 1;
+    }
+
+    .envelope-heart {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffb3cd, #ff2f73);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.7rem;
+      box-shadow: 0 0 18px rgba(255, 47, 115, 0.7);
+      position: relative;
+      z-index: 2;
+      cursor: pointer;
+    }
+
+    .letter-open-container {
+      margin-top: 12px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.7s ease;
+      position: relative;
+    }
+
+    .letter-open-container.open {
+      max-height: 620px;
+    }
+
+    .letter-content-card {
+      background: #ffffff;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 47, 115, 0.35);
+      padding: 14px 13px 14px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
+
+    .letter-flower-static {
+      position: absolute;
+      top: -14px;
+      right: -6px;
+      font-size: 1.6rem;
+    }
+
+    .letter-content-title {
+      font-size: 1.02rem;
+      margin-bottom: 6px;
+      color: #c51f56;
+    }
+
+    .letter-content p {
+      font-size: 0.92rem;
+      margin-bottom: 8px;
+      color: #555555;
+    }
+
+    .letter-tag {
+      margin-top: 6px;
+      font-size: 0.86rem;
+      color: var(--gris);
+      text-align: right;
+    }
+
+    .flowers-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 15;
+      display: none;
+    }
+
+    .flower {
+      position: absolute;
+      font-size: 1.4rem;
+      opacity: 0;
+      animation: flowerFall 2.8s ease-out forwards;
+    }
+
+    @keyframes flowerFall {
+      0% {
+        transform: translateY(-30px) scale(0.8) rotate(0deg);
+        opacity: 0;
+      }
+      20% { opacity: 1; }
+      100% {
+        transform: translateY(120vh) scale(1) rotate(40deg);
+        opacity: 0;
+      }
+    }
+
+    /* Sección amigas (Brenda y Abi) */
+    .friends-toggle {
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .friends-toggle button {
+      border: none;
+      cursor: pointer;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      background: linear-gradient(135deg, #ff2f73, #ff8ab0);
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(255, 47, 115, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .friends-toggle button:hover {
+      transform: translateY(-1px);
+    }
+
+    .friends-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+    }
+
+    .friends-content.open {
+      max-height: 600px;
+    }
+
+    .friends-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 14px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .friends-image {
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 47, 115, 0.25);
+      background: #fff;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .friends-image img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .friends-text {
+      position: relative;
+    }
+
+    .friends-lines span {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: lineIn 0.6s forwards;
+    }
+
+    .friends-lines span:nth-child(1) { animation-delay: 0.1s; }
+    .friends-lines span:nth-child(2) { animation-delay: 0.3s; }
+    .friends-lines span:nth-child(3) { animation-delay: 0.5s; }
+    .friends-lines span:nth-child(4) { animation-delay: 0.7s; }
+
+    @keyframes lineIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .friends-names {
+      margin-top: 8px;
+      font-size: 0.92rem;
+      color: var(--gris);
+    }
+
+    /* Video */
+    .video-wrapper {
+      position: relative;
+      padding-top: 56.25%;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 47, 115, 0.25);
+      background: #fff;
+      box-shadow: 0 0 0 rgba(255, 47, 115, 0.2);
+      animation: videoGlow 3s infinite alternate;
+    }
+
+    @keyframes videoGlow {
+      0% { box-shadow: 0 0 0 rgba(255, 47, 115, 0.15); }
+      100% { box-shadow: 0 0 30px rgba(255, 47, 115, 0.35); }
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* AUDIO: imagen circular + reproductor al costado */
+    .audio-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .audio-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid rgba(255, 47, 115, 0.6);
+      flex-shrink: 0;
+    }
+
+    .audio-wrapper {
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .audio-wrapper audio {
+      width: 100%;
+      height: 36px;
+    }
+
+    .audio-hearts-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 10;
+      display: none;
+    }
+
+    .audio-heart {
+      position: absolute;
+      font-size: 1.4rem;
+      opacity: 0;
+      animation: audioHeartFloat 2.2s ease-out forwards;
+    }
+
+    @keyframes audioHeartFloat {
+      0% {
+        transform: translateY(20px) scale(0.8);
+        opacity: 0;
+      }
+      20% { opacity: 1; }
+      100% {
+        transform: translateY(-120px) scale(1.1);
+        opacity: 0;
+      }
+    }
+
+    /* Mapa */
+    .map-wrapper {
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 47, 115, 0.25);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+      background: #fff;
+    }
+
+    .map-wrapper iframe {
+      width: 100%;
+      height: 270px;
+      border: 0;
+    }
+
+    /* Contador */
+    .timer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timer-display {
+      font-size: 1.3rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      color: #c51f56;
+      padding: 4px 0;
+    }
+
+    .timer-sub {
+      font-size: 0.9rem;
+      color: var(--gris);
+      text-align: center;
+    }
+
+    /* Juego */
+    .game {
+      text-align: center;
+    }
+
+    .game-buttons {
+      margin-top: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    .btn {
+      border: none;
+      cursor: pointer;
+      padding: 9px 18px;
+      border-radius: 999px;
+      font-size: 0.94rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease,
+        background 0.15s ease, color 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ff2f73, #ff8ab0);
+      color: #ffffff;
+      box-shadow: 0 8px 20px rgba(255, 47, 115, 0.5);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px) scale(1.03);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--texto);
+      border: 1px solid rgba(255, 47, 115, 0.35);
+    }
+
+    .btn-ghost:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+    }
+
+    .no-btn {
+      position: relative;
+    }
+
+    .game-result {
+      margin-top: 10px;
+      font-size: 0.92rem;
+      min-height: 1.2em;
+    }
+
+    .result-ok {
+      color: #c51f56;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #999999;
+      margin-top: 10px;
+      padding: 10px 8px 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    footer span {
+      color: #c51f56;
+    }
+
+    @media (max-width: 600px) {
+      main {
+        padding-inline: 12px;
+      }
+      .polaroid-view {
+        height: 240px;
+      }
+      .polaroid {
+        width: 190px;
+      }
+      .friends-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Corazones flotantes de fondo -->
+  <div class="hearts-bg" id="heartsBg"></div>
+
+  <!-- Fondo suave mientras está bloqueado -->
+  <div class="locked-overlay" id="lockedOverlay"></div>
+
+  <!-- Palabras flotando del tac-tac -->
+  <div class="floating-words" id="floatingWords"></div>
+
+  <!-- Flores al abrir la carta -->
+  <div class="flowers-overlay" id="flowersOverlay"></div>
+
+  <!-- Corazones durante el audio -->
+  <div class="audio-hearts-overlay" id="audioHeartsOverlay"></div>
+
+  <!-- PANTALLA TAC-TAC -->
+  <section class="hero" id="hero">
+    <div style="text-align:center;">
+      <h1>Rosmery</h1>
+      <p class="hero-sub">
+        Antes de ver todo lo que preparé para ti, quiero que empieces
+        con algo sencillo: toca el corazón muchas veces,
+        como si estuvieras dando likes, y deja que se llene de lo que siento por ti.
+      </p>
+    </div>
+
+    <div class="heart-container" id="heartContainer">
+      <span class="heart-emoji" id="heartEmoji">❤️</span>
+    </div>
+    <p class="hint">Tócalo varias veces hasta que desaparezca. </p>
+  </section>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main>
+    <!-- INTRO -->
+    <section class="intro reveal">
+      <div class="intro-title">Rosmery</div>
+      <div class="intro-subtitle">
+        Todo esto es mi forma de decirte cuánto te quiero y cuánto quiero que estemos bien.
+      </div>
+
+      <div class="intro-image-wrapper">
+        <div class="intro-torn">
+          <!-- Primera foto: foto1.jpeg -->
+          <img src="img/foto1.jpeg" alt="Rosmery" />
+        </div>
+      </div>
+
+      <div class="typing-line" id="typingLine"></div>
+    </section>
+
+    <!-- CARRUSEL POLAROID (fotos 2-6) -->
+    <section id="tarjetas" class="reveal">
+      <div class="card">
+        <h2>Algunas cosas que siento por ti</h2>
+
+        <div class="polaroid-carousel" id="polaroidCarousel">
+          <div class="polaroid-view" id="polaroidView">
+            <div class="polaroid" id="polaroidCard">
+              <img src="img/foto2.jpeg" alt="Rosmery" id="polaroidImg" />
+              <div class="polaroid-caption">
+                <div class="polaroid-name">Rosmery</div>
+                <div class="polaroid-text" id="polaroidText">
+                  Te amo más de lo que a veces sé expresar.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="polaroid-dots" id="polaroidDots"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARTA -->
+    <section id="carta" class="reveal">
+      <div class="card">
+        <h2>Nuestra historia en estos 8 meses</h2>
+        <p style="margin-bottom: 12px;">
+          Te escribí algo que solo se abre si tú quieres.  
+          Es nuestra historia en palabras, con un perdón que sale
+          desde el fondo de mi corazón.
+        </p>
+        <div class="letter-wrapper">
+          <div class="letter">
+            <div class="envelope" id="envelope">
+              <div class="envelope-title">Carta para ti</div>
+              <div class="envelope-sub">Toca el corazón para abrirla 🌸</div>
+              <div class="envelope-heart" id="envelopeHeart">💌</div>
+            </div>
+
+            <div class="letter-open-container" id="letterOpenContainer">
+              <div class="letter-content-card">
+                <span class="letter-flower-static">🌸</span>
+                <div class="letter-content">
+                  <div class="letter-content-title">8 meses contigo</div>
+                  <p>
+                    Ocho meses pueden sonar a poco para algunos, pero para mí
+                    han sido suficientes para entender que no quiero a nadie
+                    más ocupando el lugar que tienes tú en mi vida.
+                  </p>
+                  <p>
+                    Recuerdo cada momento: las risas tontas, las conversaciones
+                    largas, los días buenos, los días raros, incluso los
+                    silencios. Todo eso se ha ido quedando en mi memoria como
+                    pequeñas películas que veo una y otra vez.
+                  </p>
+                  <p>
+                    Sé que no siempre he sido perfecto, y que he cometido
+                    errores que te han lastimado. Por eso, más que hablar de lo
+                    bonito, hoy quiero pedirte perdón de verdad: por lo que hice,
+                    por lo que no hice, por lo que dije mal o no supe decir.
+                  </p>
+                  <p>
+                    Gracias por aguantar mis fallas, por seguir aquí a pesar de
+                    todo lo que hemos pasado, y por enseñarme que amar también
+                    es aprender, cambiar y pedir perdón cuando toca hacerlo.
+                  </p>
+                  <p>
+                    No quiero que estos 8 meses se queden en un recuerdo triste.
+                    Quiero que sean solo el inicio de algo más grande, más
+                    maduro y más bonito. Quiero seguir sumando meses, años y
+                    momentos a tu lado.
+                  </p>
+                  <p>
+                    Si decides perdonarme, prometo esforzarme de verdad,
+                    no solo con palabras, sino con hechos. Porque lo que
+                    siento por ti es real, y no pienso rendirme por ti.
+                  </p>
+                  <p class="letter-tag">
+                    Con todo mi corazón,<br />
+                    alguien que no quiere perderte.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- fin letter -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN AMIGAS: BRENDA Y ABI -->
+    <section id="amigas" class="reveal">
+      <div class="card">
+        <h2>También quiero pedir perdón a tus amigas</h2>
+
+        <div class="friends-layout">
+          <!-- Foto de amigas: amigas.png -->
+          <div class="friends-image">
+            <img src="img/amigas.png" alt="Brenda, Abi y Rosmery" />
+          </div>
+
+          <!-- Botón + texto desplegable -->
+          <div class="friends-text">
+            <div class="friends-toggle">
+              <button type="button" id="friendsToggleBtn">
+                Ver mensaje para Brenda y Abi
+              </button>
+            </div>
+
+            <div class="friends-content" id="friendsContent">
+              <div class="friends-lines">
+                <span>Brenda, Abi, sé que a veces no he sido justo</span><br />
+                <span>con ustedes y con la forma en que he tratado</span><br />
+                <span>a su mejor amiga, la persona que más quiero.</span><br />
+                <span>De corazón, les pido disculpas por eso.</span>
+              </div>
+              <p style="margin-top: 10px; font-size: 0.94rem; color: #555;">
+                Ella las quiere muchísimo, y eso las hace importantes también para mí.
+                Quiero que sepan que valoro a las personas que la cuidan, la apoyan
+                y están a su lado cuando yo no puedo estar.
+              </p>
+              <p style="margin-top: 6px; font-size: 0.94rem; color: #555;">
+                Prometo esforzarme por ser alguien que sume y no que reste,
+                alguien que esté a la altura del cariño que ustedes le tienen.
+              </p>
+              <div class="friends-names">
+                Para Brenda y Abi, con respeto y sincero arrepentimiento.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIDEO -->
+    <section id="video" class="reveal">
+      <div class="card">
+        <h2>Un video para acompañar lo que siento</h2>
+        <p style="margin-bottom: 10px;">
+          Hay cosas que a veces no sé explicar con mis propias palabras,
+          pero esta canción/video dice mucho de lo que mi corazón quiere
+          decirte ahora mismo.
+        </p>
+        <div class="video-wrapper">
+          <iframe
+            src="https://www.youtube.com/embed/z0WSQ6zS7ss"
+            title="Video para Rosmery"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- AUDIO -->
+    <section id="audio" class="reveal">
+      <div class="card">
+        <h2>Mi voz, para que escuches lo que siento</h2>
+        <p style="margin-bottom: 8px;">
+          Aquí quiero que escuches algo que salga directamente de mí:
+          sin texto, sin filtros, solo mi voz hablándote a ti.
+        </p>
+
+        <div class="audio-row">
+          <img src="img/perfil.png" alt="Mi foto" class="audio-avatar" />
+          <div class="audio-wrapper">
+            <audio id="audioPlayer" controls>
+              <source src="audio/mensaje.ogg" type="audio/mpeg" />
+              
+            </audio>
+          </div>
+        </div>
+
+        <p style="margin-top: 6px; font-size: 0.85rem; color: var(--gris);">
+          
+      </div>
+    </section>
+
+    <!-- MAPA -->
+    <section id="mapa" class="reveal">
+      <div class="card">
+        <h2>Aunque estemos lejos…</h2>
+        <p style="margin-bottom: 10px;">
+          Entre Huaral y Arequipa hay kilómetros de distancia,
+          pero no existe mapa que pueda medir lo que siento por ti.
+        </p>
+        <div class="map-wrapper">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m24!1m8!1m3!1d7927738.732989283!2d-79.6728063!3d-14.0200192!3m2!1i1024!2i768!4f13.1!4m13!3e6!4m5!1s0x91068a108a543785%3A0x75d85698f090e6cf!2sHuaral!3m2!1d-11.496592099999999!2d-77.20905789999999!4m5!1s0x91424a487785b9b3%3A0xa3c4a612b9942036!2sArequipa!3m2!1d-16.4057001!2d-71.5400994!5e0!3m2!1ses!2spe!4v1795656723690!5m2!1ses!2spe"
+            style="border:0;"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+          ></iframe>
+        </div>
+        <p style="margin-top: 10px; font-size: 0.94rem; color: var(--gris);">
+          Puede que el mapa marque una distancia,
+          pero mi cariño por ti no entiende de kilómetros,
+          ni de ciudades, ni de tiempo.  
+          Yo elijo cruzar esa distancia por ti, las veces que hagan falta.
+        </p>
+      </div>
+    </section>
+
+    <!-- CONTADOR -->
+    <section id="tiempo" class="reveal">
+      <div class="card timer">
+        <h2>Te voy a esperar el tiempo que necesites</h2>
+        <div class="timer-display" id="timerDisplay">
+          ∞:59:59
+        </div>
+        <div class="timer-sub">
+          Como si fuera una eternidad: este sentimiento va a seguir siendo tuyo,
+          fiel, pase el tiempo que pase.
+        </div>
+      </div>
+    </section>
+
+    <!-- JUEGO -->
+    <section id="juego" class="reveal">
+      <div class="card game">
+        <h2>La pregunta más importante…</h2>
+        <p>¿Me perdonas?</p>
+        <div class="game-buttons">
+          <button class="btn btn-primary" id="yesBtn">
+            Sí, te perdono 💗
+          </button>
+          <button class="btn btn-ghost no-btn" id="noBtn">
+            No
+          </button>
+        </div>
+        <div class="game-result" id="gameResult"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Hecho pensando en ti, <span>Rosmery</span>.  
+    Ocho meses no son nada comparado con todo lo que quiero vivir a tu lado.
+  </footer>
+
+  <script>
+    // ---------- Corazones de fondo ----------
+    const heartsBg = document.getElementById("heartsBg");
+    function createBgHearts() {
+      const total = 25;
+      for (let i = 0; i < total; i++) {
+        const h = document.createElement("span");
+        h.className = "bg-heart";
+        h.textContent = "❤";
+        const size = 16 + Math.random() * 10;
+        h.style.fontSize = size + "px";
+        h.style.left = Math.random() * 100 + "vw";
+        h.style.animationDuration = 14 + Math.random() * 10 + "s";
+        h.style.animationDelay = -Math.random() * 20 + "s";
+        heartsBg.appendChild(h);
+      }
+    }
+    createBgHearts();
+
+    // ---------- Tac-tac del corazón ----------
+    const heartContainer = document.getElementById("heartContainer");
+    const heartEmoji = document.getElementById("heartEmoji");
+    const floatingWords = document.getElementById("floatingWords");
+    const lockedOverlay = document.getElementById("lockedOverlay");
+    const hero = document.getElementById("hero");
+    const mainContent = document.querySelector("main");
+
+    const words = [
+      "Presiona",
+      "Te amo",
+      "Te quiero mucho",
+      "Eres única",
+      "Solo tú",
+      "Mi niña",
+      "Mi razón",
+      "Mi todo",
+    ];
+    const colors = ["#ff2f73", "#ff8ab0", "#ffb800", "#6a5be8", "#00b894"];
+
+    let taps = 0;
+    const tapsToUnlock = 10;
+    let heartScale = 1;
+
+    heartContainer.addEventListener("click", () => {
+      taps++;
+      createFloatingWord();
+      heartScale += 0.12;
+      heartEmoji.style.transform = "scale(" + heartScale + ")";
+      if (taps >= tapsToUnlock) {
+        heartEmoji.style.transition = "transform 0.4s ease, opacity 0.4s ease";
+        heartEmoji.style.transform = "scale(3)";
+        heartEmoji.style.opacity = "0";
+        setTimeout(endHeartPhase, 450);
+      }
+    });
+
+    function createFloatingWord() {
+      const span = document.createElement("span");
+      span.className = "floating-word";
+      span.textContent = words[Math.floor(Math.random() * words.length)];
+      span.style.color = colors[Math.floor(Math.random() * colors.length)];
+      const x = 15 + Math.random() * 70;
+      const y = 40 + Math.random() * 40;
+      span.style.left = x + "vw";
+      span.style.top = y + "vh";
+      floatingWords.appendChild(span);
+      setTimeout(() => span.remove(), 1200);
+    }
+
+    function endHeartPhase() {
+      hero.style.display = "none";
+      mainContent.style.display = "block";
+      document.body.style.overflowY = "auto";
+      lockedOverlay.classList.add("hidden");
+      window.scrollTo(0, 0);
+      startTypingEffect();
+      // El observer se encargará del reveal de secciones
+    }
+
+    // ---------- Typing effect (letra por letra) ----------
+    const typingLine = document.getElementById("typingLine");
+    const typingText =
+      "Escribo esto con el corazón en la mano, esperando que al leerlo sientas cuánto me importas.";
+
+    function startTypingEffect() {
+      typingLine.textContent = "";
+      let index = 0;
+      const speed = 40; // ms por carácter
+      const interval = setInterval(() => {
+        typingLine.textContent += typingText.charAt(index);
+        index++;
+        if (index >= typingText.length) {
+          clearInterval(interval);
+        }
+      }, speed);
+    }
+
+    // ---------- Carrusel polaroid (fotos 2-6) ----------
+    const polaroidData = [
+      {
+        src: "img/foto2.jpeg",
+        texto: "Te amo más de lo que a veces sé expresar.",
+      },
+      {
+        src: "img/foto3.jpeg",
+        texto: "Te quiero en mis días buenos, malos y en todos los que vengan.",
+      },
+      {
+        src: "img/foto4.jpeg",
+        texto: "Eres mi paz, incluso cuando todo lo demás es un caos.",
+      },
+      {
+        src: "img/foto5.jpeg",
+        texto: "Me encanta cómo eres tú misma, sin aparentar nada.",
+      },
+      {
+        src: "img/foto6.jpeg",
+        texto: "Te elijo hoy, mañana y todas las veces que haga falta.",
+      },
+    ];
+
+    const polaroidCard = document.getElementById("polaroidCard");
+    const polaroidImg = document.getElementById("polaroidImg");
+    const polaroidText = document.getElementById("polaroidText");
+    const polaroidDots = document.getElementById("polaroidDots");
+    const polaroidView = document.getElementById("polaroidView");
+
+    let currentPolaroid = 0;
+
+    function renderDots() {
+      polaroidDots.innerHTML = "";
+      polaroidData.forEach((_, i) => {
+        const dot = document.createElement("div");
+        dot.className = "polaroid-dot" + (i === currentPolaroid ? " active" : "");
+        polaroidDots.appendChild(dot);
+      });
+    }
+
+    function showPolaroid(index, direction = 0) {
+      if (index < 0) index = polaroidData.length - 1;
+      if (index >= polaroidData.length) index = 0;
+
+      const next = polaroidData[index];
+      const rot = direction === 0 ? -4 : (direction > 0 ? 4 : -2);
+      polaroidCard.style.transition = "none";
+      polaroidCard.style.opacity = "0";
+      polaroidCard.style.transform = `translateX(${direction * 40}px) rotate(${rot}deg)`;
+
+      requestAnimationFrame(() => {
+        polaroidImg.src = next.src;
+        polaroidText.textContent = next.texto;
+        requestAnimationFrame(() => {
+          polaroidCard.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+          polaroidCard.style.opacity = "1";
+          polaroidCard.style.transform = `translateX(0) rotate(${rot}deg)`;
+        });
+      });
+
+      currentPolaroid = index;
+      renderDots();
+    }
+
+    renderDots();
+    showPolaroid(0);
+
+    let startX = 0;
+    let isDown = false;
+
+    const startSwipe = (e) => {
+      isDown = true;
+      startX = e.type.includes("mouse") ? e.clientX : e.touches[0].clientX;
+      polaroidCard.style.transition = "none";
+    };
+
+    const moveSwipe = (e) => {
+      if (!isDown) return;
+      const x = e.type.includes("mouse") ? e.clientX : e.touches[0].clientX;
+      const dx = x - startX;
+      polaroidCard.style.transform = `translateX(${dx}px) rotate(${dx * 0.03}deg)`;
+      polaroidCard.style.opacity = `${1 - Math.min(Math.abs(dx) / 250, 0.5)}`;
+    };
+
+    const endSwipe = (e) => {
+      if (!isDown) return;
+      isDown = false;
+      const x = e.type.includes("mouse") ? e.clientX : (e.changedTouches?.[0].clientX || 0);
+      const dx = x - startX;
+      if (Math.abs(dx) > 70) {
+        const dir = dx > 0 ? -1 : 1; // derecha -> anterior, izquierda -> siguiente
+        showPolaroid(currentPolaroid + dir, dir);
+      } else {
+        polaroidCard.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+        polaroidCard.style.transform = "translateX(0) rotate(-4deg)";
+        polaroidCard.style.opacity = "1";
+      }
+    };
+
+    polaroidView.addEventListener("mousedown", startSwipe);
+    polaroidView.addEventListener("touchstart", startSwipe);
+    window.addEventListener("mousemove", moveSwipe);
+    window.addEventListener("touchmove", moveSwipe);
+    window.addEventListener("mouseup", endSwipe);
+    window.addEventListener("touchend", endSwipe);
+
+    // ---------- Carta + flores ----------
+    const envelopeHeart = document.getElementById("envelopeHeart");
+    const envelope = document.getElementById("envelope");
+    const letterOpenContainer = document.getElementById("letterOpenContainer");
+    const flowersOverlay = document.getElementById("flowersOverlay");
+
+    envelopeHeart.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = letterOpenContainer.classList.contains("open");
+      if (!isOpen) {
+        letterOpenContainer.classList.add("open");
+        envelope.style.display = "none";
+        triggerFlowers();
+      }
+    });
+
+    function triggerFlowers() {
+      flowersOverlay.style.display = "block";
+      for (let i = 0; i < 45; i++) {
+        const span = document.createElement("span");
+        span.className = "flower";
+        const emojis = ["🌸", "🌺", "🌷", "💮", "🌹", "🌻", "🌼"];
+        span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        span.style.left = Math.random() * 100 + "vw";
+        span.style.top = -Math.random() * 60 + "px";
+        flowersOverlay.appendChild(span);
+        setTimeout(() => span.remove(), 3000);
+      }
+      setTimeout(() => {
+        flowersOverlay.style.display = "none";
+      }, 3000);
+    }
+
+    // ---------- Amigas: toggle mostrar/ocultar ----------
+    const friendsToggleBtn = document.getElementById("friendsToggleBtn");
+    const friendsContent = document.getElementById("friendsContent");
+
+    friendsToggleBtn.addEventListener("click", () => {
+      const open = friendsContent.classList.toggle("open");
+      if (open) {
+        friendsToggleBtn.textContent = "Ocultar mensaje para Brenda y Abi";
+        const oldLines = friendsContent.querySelector(".friends-lines");
+        if (oldLines) {
+          const clone = oldLines.cloneNode(true);
+          oldLines.parentNode.replaceChild(clone, oldLines);
+        }
+      } else {
+        friendsToggleBtn.textContent = "Ver mensaje para Brenda y Abi";
+      }
+    });
+
+    // ---------- Audio + corazones animados ----------
+    const audioPlayer = document.getElementById("audioPlayer");
+    const audioHeartsOverlay = document.getElementById("audioHeartsOverlay");
+    let audioHeartInterval = null;
+
+    audioPlayer.addEventListener("play", () => {
+      audioHeartsOverlay.style.display = "block";
+      if (audioHeartInterval) clearInterval(audioHeartInterval);
+      audioHeartInterval = setInterval(createAudioHeart, 400);
+    });
+
+    audioPlayer.addEventListener("pause", stopAudioHearts);
+    audioPlayer.addEventListener("ended", stopAudioHearts);
+
+    function stopAudioHearts() {
+      if (audioHeartInterval) {
+        clearInterval(audioHeartInterval);
+        audioHeartInterval = null;
+      }
+      audioHeartsOverlay.style.display = "none";
+    }
+
+    function createAudioHeart() {
+      const span = document.createElement("span");
+      span.className = "audio-heart";
+      const emojis = ["❤️", "🩷", "💗", "💖", "💘"];
+      span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      span.style.left = 10 + Math.random() * 80 + "vw";
+      span.style.bottom = 10 + Math.random() * 40 + "px";
+      audioHeartsOverlay.appendChild(span);
+      setTimeout(() => span.remove(), 2300);
+    }
+
+    // ---------- Contador ∞:59:59 que baja y reinicia ----------
+    const timerDisplay = document.getElementById("timerDisplay");
+    let countdown = 59 * 60 + 59;
+
+    function updateTimer() {
+      let m = Math.floor(countdown / 60);
+      let s = countdown % 60;
+      const mm = String(m).padStart(2, "0");
+      const ss = String(s).padStart(2, "0");
+      timerDisplay.textContent = `∞:${mm}:${ss}`;
+      countdown--;
+      if (countdown < 0) countdown = 59 * 60 + 59;
+    }
+    setInterval(updateTimer, 1000);
+
+    // ---------- Juego ----------
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+    const gameResult = document.getElementById("gameResult");
+
+    let noSize = 1;
+    yesBtn.addEventListener("click", () => {
+      gameResult.textContent =
+        "Gracias por perdonarme. Prometo que todo este esfuerzo no será solo una página, sino un cambio real. 💗";
+      gameResult.className = "game-result result-ok";
+    });
+
+    noBtn.addEventListener("mouseover", moveNoBtn);
+    noBtn.addEventListener("click", moveNoBtn);
+
+    function moveNoBtn() {
+      noSize *= 0.8;
+      if (noSize < 0.3) noSize = 0.3;
+      noBtn.style.transform = `scale(${noSize})`;
+      const offsetX = (Math.random() - 0.5) * 140;
+      const offsetY = (Math.random() - 0.5) * 60;
+      noBtn.style.position = "relative";
+      noBtn.style.left = offsetX + "px";
+      noBtn.style.top = offsetY + "px";
+    }
+
+    // ---------- Animación reveal con IntersectionObserver ----------
+    const revealElements = document.querySelectorAll(".reveal");
+
+    const observerOptions = {
+      threshold: 0.15
+    };
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    revealElements.forEach(el => revealObserver.observe(el));
+  </script>
+</body>
+</html>
